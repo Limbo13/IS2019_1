@@ -7,6 +7,7 @@ Function Format-GetCounter{
             CookedValue = $CounterList.CounterSamples.CookedValue
         }
 
+        $CounterArray = @()
         $DateStamp = Get-Date -Format "MM/dd/yyyy hh:mm:ss tt"
         $RowCountRaw = $MyPSObject.Path | Measure
         [int]$RowCount = [math]::Round($RowCountRaw.Count)
@@ -31,15 +32,22 @@ Function Format-GetCounter{
             }
             $CType = $CurrPath.Substring($ThirdSlash+1,$PathLen-$ThirdSlash-1)
 
-            Write-Output "Datetime    : $DateStamp"
-            Write-Output "Computername: $CompName"
-            Write-Output "Counterset  : $CSet"
-            Write-Output "Counter     : $CType"
-            Write-Output "Value       : $CurrValue"
-            Write-Output " "
+            $CounterInfo = New-Object -TypeName psobject
+            $CounterInfo | Add-Member -Type NoteProperty -Name Computername -Value $CompName
+            $CounterInfo | Add-Member -Type NoteProperty -Name Counterset -Value $CSet
+            $CounterInfo | Add-Member -Type NoteProperty -Name Counter -Value $CType
+            $CounterInfo | Add-Member -Type NoteProperty -Name CounterValue -Value $CurrValue
+
+            $CounterArray += $CounterInfo
 
             $CurrRow++
+
+            Write-Output $CurrPath
             } Until ($CurrRow -eq $RowCount)
         }
+
+        Write-Output " "
+        Write-Output "Timestamp: $DateStamp"
+        Write-Output $CounterArray
     }
 }
